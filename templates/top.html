@@ -2,5 +2,20 @@
 <head><meta charset="utf-8"/></head>
 <body>
     <h1 style="background-color:#119933">{{name}}</h1>
+
+    <table border="1">
+    <a href="/guchi">つぶやく</a>
+    {% for row in rows %}
+      <tr>
+        <td>{{row[0]}}<td>
+        <td>{{row[2]}}<td>
+        <td>{{row[5]}}<td>
+        <td>{{row[7]}}<td>
+        <td>{{row[8]}}<td>
+      </tr>
+     {% endfor %}
+
+    </table>
+
 </body>
 </html>
