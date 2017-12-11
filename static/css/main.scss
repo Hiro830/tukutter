@@ -1,0 +1,34 @@
+$c_main:#f7b52c;
+$c_button:#000066;
+$c_font:#707070;
+$c_mainback:#EEEEEE;
+$c_accent:#B9DCF2;
+
+* {
+  font-family: 'Abel', sans-serif;
+  color: $c_font;
+}
+
+.button {
+  background-color: $c_main;
+  color: #FFFFFF;
+}
+
+input,textarea {
+  border: solid 1px $c_font;
+}
+
+.view-pc {
+  display: inline;
+}
+.view-sp {
+  display: none;
+}
+@media (max-width:599px) {
+  .view-pc {
+    display: none;
+  }
+  .view-sp {
+    display: inline;
+  }
+}

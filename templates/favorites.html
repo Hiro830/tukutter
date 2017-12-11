@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://fonts.googleapis.com/css?family=Abel" rel="stylesheet">
+  <link rel="stylesheet" href="css/reset.min.css">
+  <link rel="stylesheet" href="css/main.min.css">
+  <link rel="stylesheet" href="css/favorites.min.css">
+  <title>tukutter | お気に入り</title>
+</head>
+<body>
+  <main id="favorites">
+    <header>
+      <div class="profile">
+        <a href="#"><img src="../static/img/profile.png" alt=""></a>
+        <a href="/plofile/{{user[2]}}"><p>{{user[2]}}</p></a>
+
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/top">top</a></li>
+          <li><a href="#">検索</a></li>
+          <li><a href="/tubuyaita-">つぶやく</a></li>
+          <li><a href="/favorite">お気に入り</a></li>
+          <li><a href="/logout">ログアウト</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="stream">
+
+      {% for row in favarites %}
+      <div class="content">
+        <div class="stream-header">
+          <a href="#"><img src="../static/img/profile.png" alt=""></a>
+          <p>
+            <a href="/plofile/{{row[2]}}"><span class="user-name">{{row[2]}}</span></a>
+            <span class="tweet-time">{{row[10]}}</span>
+            <span class="follow">フォロー中</span>
+          </p>
+        </div>
+        <div class="inline">
+          <div class="stream-content">
+            <p>{{row[9]}}</p>
+          </div>
+          <div class="stream-footer">
+            <div class="favorite">
+              <a href="#"><img src="../static/img/logo-pic.png" alt=""></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+  </main>
+</body>
+</html>

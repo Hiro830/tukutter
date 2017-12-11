@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://fonts.googleapis.com/css?family=Abel" rel="stylesheet">
+  <link rel="stylesheet" href="css/reset.min.css">
+  <link rel="stylesheet" href="css/main.min.css">
+  <link rel="stylesheet" href="css/profile_edit.min.css">
+  <!-- <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script> -->
+  <!-- <script type="text/javascript" src="js/profile_edit.js"></script> -->
+  <title>tukutter | プロフィール編集</title>
+</head>
+<body>
+  <main id="profile_edit">
+    <div class="logo">
+      <p>ユーザー登録</p>
+    </div>
+    <form action="#" method="post">
+      <div class="inline">
+        <label for="userid">image</label>
+        <input id="file" class="file" type="file" name="file" value="">
+        <!-- <label for="file" class="view_box">
+          +画像を選択
+          <input id="file" class="file" type="file" name="file" value="" style="display:none;">
+        </label> -->
+      </div>
+      <div class="inline">
+        <label for="userid">user ID</label>
+        <input type="text" name="userid" value="">
+      </div>
+      <div class="inline">
+        <label for="password">password</label>
+        <input type="password" name="password" value="">
+      </div>
+      <div class="inline">
+        <label for="password">password確認</label>
+        <input type="password" name="password" value="">
+      </div>
+      <div class="inline">
+        <label for="password">お名前</label>
+        <input type="text" name="username" value="">
+      </div>
+      <div class="inline">
+        <label for="password">ひと言</label>
+        <textarea type="text" name="words" value=""></textarea>
+      </div>
+      <input class="button" type="submit" name="submit" value="登録">
+    </form>
+  </main>
+</body>
+</html>
