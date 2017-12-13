@@ -30,15 +30,18 @@
       </nav>
     </header>
 
+    {% if hantei == 1 %}
+
     <div class="profilecard">
       <div class="profile-header">
         <img src="../static/img/profile.png" alt="">
-        <p><span class="user-name">{{user[2]}}</span><a href="#"><img class="edit" src="img/pencil.png" alt=""></a></p>
+        <p><span class="user-name">{{user[2]}}</span><a href="/profile"><img class="edit" src="../static/img/pencil.png" alt=""></a></p>
       </div>
       <div class="profile-content">
         <p>{{user[4]}}</p>
       </div>
     </div>
+  {% endif %}
 
     <div class="stream">
 

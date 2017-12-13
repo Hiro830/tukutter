@@ -23,7 +23,7 @@
       <nav>
         <ul>
           <li><a href="/top">top</a></li>
-          <li><a href="#">検索</a></li>
+          <li><a href="/search">検索</a></li>
           <li><a href="/tubuyaita-">つぶやく</a></li>
           <li><a href="/favorite">お気に入り</a></li>
           <li><a href="/logout">ログアウト</a></li>
@@ -40,7 +40,9 @@
           <p>
             <a href="/plofile/{{row[2]}}"><span class="user-name">{{row[2]}}</span></a>
             <span class="tweet-time">{{row[10]}}</span>
-            <span class="follow">フォロー中</span>
+
+            <a href="/follow/{{row[0]}}"><span class="follow">フォロー中</span></a>
+
           </p>
         </div>
         <div class="inline">
@@ -49,7 +51,7 @@
           </div>
           <div class="stream-footer">
             <div class="favorite">
-              <a href="#"><img src="../static/img/logo-pic.png" alt=""></a>
+              <a href="/favoritelog"><img src="../static/img/logo-pic.png" alt=""></a>
             </div>
           </div>
         </div>
