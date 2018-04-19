@@ -46,7 +46,11 @@
           <p>
             <a href="/plofile/{{row[2]}}"><span class="user-name">{{row[2]}}</span></a>
             <span class="tweet-time">{{row[10]}}</span>
+            {% if row[13] == 1 %}
             <a href="/follow/{{row[0]}}"><span class="follow">フォロー中</span></a>
+            {% else %}
+            <a href="/follow/{{row[0]}}"><span class="follow">フォローしてない</span></a>
+            {% endif %}
           </p>
         </div>
         <div class="inline">
@@ -55,7 +59,12 @@
           </div>
           <div class="stream-footer">
             <div class="favorite">
-              <a href="#"><img src="../static/img/logo-pic.png" alt=""></a>
+
+              {% if row[12] == 1 %}
+              <a href="/favorite/{{row[7]}}"><img src="../static/img/logo-pic.png" alt=""></a>
+              {% else %}
+              <a href="/favorite/{{row[7]}}"><span class="favorite">not favorite</span></a>
+              {% endif %}
             </div>
           </div>
         </div>
