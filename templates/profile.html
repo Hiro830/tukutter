@@ -22,7 +22,7 @@
       <nav>
         <ul>
           <li><a href="/top">top</a></li>
-          <li><a href="#">検索</a></li>
+          <li><a href="/search">検索</a></li>
           <li><a href="/tubuyaita-">つぶやく</a></li>
           <li><a href="/favorite">お気に入り</a></li>
           <li><a href="/logout">ログアウト</a></li>
@@ -30,7 +30,7 @@
       </nav>
     </header>
 
-    {% if hantei == 1 %}
+    {% if check == 1 %}
 
     <div class="profilecard">
       <div class="profile-header">
@@ -52,7 +52,14 @@
           <p>
             <span class="user-name">{{tweet[2]}}</span>
             <span class="tweet-time">{{tweet[10]}}</span>
-            <span class="follow">フォロー中</span>
+
+
+            {% if tweet[13] == 1 %}
+            <a href="/follow/{{tweet[0]}}"><span class="follow">フォロー中</span></a>
+            {% else %}
+            <a href="/follow/{{tweet[0]}}"><span class="follow">フォローしてない</span></a>
+            {% endif %}
+
           </p>
         </div>
         <div class="inline">
@@ -61,7 +68,11 @@
           </div>
           <div class="stream-footer">
             <div class="favorite">
-              <a href="#"><img src="../static/img/logo-pic.png" alt=""></a>
+              {% if tweet[12] == 1 %}
+              <a href="/favorite/{{tweet[7]}}"><img src="../static/img/logo-pic.png" alt=""></a>
+              {% else %}
+              <a href="/favorite/{{tweet[7]}}"><span class="favorite">not favorite</span></a>
+              {% endif %}
             </div>
           </div>
         </div>

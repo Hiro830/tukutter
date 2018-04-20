@@ -5,14 +5,52 @@ from flask import Flask, render_template,request,redirect,make_response
 application = Flask(__name__)
 host="localhost:8080"
 
+def Get_tweet(x,L):   #全部のtweetにuser情報を追加し、ログインuserがfollow,favoriteの判定
+    db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
+    con = db.cursor()
+    userinfo = user(x)
+
+    if L =='login_user':
+        sql = ('SELECT * from users ' +
+               'inner join tweetInfo on tweetInfo.users_id = users.id ')
+        con.execute(sql)
+        All_tweet = con.fetchall()
+    else:
+        sql = ('SELECT * from users ' +
+               'inner join tweetInfo on tweetInfo.users_id = users.id where users_id = %s')
+        con.execute(sql,[L])
+        All_tweet = con.fetchall()
+
+    All_list=[]
+    for row in All_tweet: #ツイート情報を個別に配列する
+        sql= ('SELECT * from favorite WHERE favorite.delete_flg=0 and ' +
+              '(tweet_id = %s and user_id = %s)')
+        con.execute(sql,[row[7],userinfo[0]])
+        favorite = con.fetchall()
+        if favorite is ():#('お気に入りじゃない')
+            newrow=row + (0,)
+        else:#('お気に入り')
+            newrow=row + (1,)
+
+        sql = ('SELECT * from follow ' +
+               'WHERE follow.delete_flg=0 and '+
+               '(follow.follow_me = %s and follow.follow_you = %s)')
+        con.execute(sql,[userinfo[0],row[0]])
+        follow = con.fetchall()
+        if follow is ():#('フォローしてない')
+            newrow2=newrow + (0,)
+        else:#('フォロー中')
+            newrow2=newrow + (1,)
+        All_list.append(newrow2)
+    return All_list
+
 def user(x):    #ログインuser情報を取得する関数
-    #mysqlに接続する
     db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
     con = db.cursor()
     sql = 'SELECT * FROM users WHERE name = %s'
     con.execute(sql,[x])
     info =con.fetchone()
-    db.close()      #mysqlの切断
+    db.close()
     con.close()
     return info #returnでinfoを返すことができる
 
@@ -45,82 +83,38 @@ def login_suru():
     con.close()
     return html
 
-@application.route('/top')
+@application.route('/top')  #topならpage=0
 def index3():
     data = request.cookies.get('username', None)
     if data is None:    #cookieの情報確認
       html = render_template('login.html')
     else:
       list=[]   #ツイートを格納する配列
-      db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
-      con = db.cursor()
+      Get_list=[]
       userinfo = user(data)
+      Get_list=Get_tweet(data,'login_user')
 
-      sql = 'SELECT follow_you FROM follow WHERE follow.delete_flg=0 and follow_me = %s'
-      con.execute(sql,[userinfo[0]])
-      result = con.fetchall()
-      test2 = result    #userがフォローしている人達のid
-
-      for row in test2: #フォローしている人のツイートを取得
-          sql = ('SELECT * from users ' +
-                 'inner join tweetInfo on tweetInfo.users_id = users.id ' +
-                 'WHERE users_id = %s')
-          con.execute(sql,[row[0]]) #各ユーザのツイート
-          test3 = con.fetchall()
-          for row in test3: #ツイート情報を個別に配列する
-              sql = 'SELECT * from favorite WHERE tweet_id = %s and user_id = %s'
-              con.execute(sql,[row[7],userinfo[0]]) #row[7]=tweet_id,userinfo=ログインuser_id
-              favorite = con.fetchall()
-              if favorite is ():
-                  #print('お気に入りじゃない')
-                  newrow=row + (0,1)
-              else:
-                  #print('お気に入り')
-                  newrow=row + (1,1)
-              list.append(newrow)
-
-      html = render_template('index.html', id=userinfo[0],name=data,rows=list)
-      #DBの切断
-      db.close()
-      con.close()
+      for follow_search in Get_list:
+          if follow_search[13] ==1 :
+              list.append(follow_search)
+      html = render_template('index.html', id=userinfo[0],name=data,rows=list,page=0)
     return html
 
-@application.route('/favorite')
+@application.route('/favorite') #favoriteならpage=1
 def favarite():
     data = request.cookies.get('username', None)
     if data is None:
       html = render_template('login.html')
     else:
-      db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
-      con = db.cursor()
+      list=[]   #ツイートを格納する配列
+      Get_list=[]
       userinfo = user(data)
+      Get_list=Get_tweet(data,'login_user')
 
-      sql = 'select * from favorite where user_id = %s and favorite.delete_flg=0'
-      con.execute(sql,[userinfo[0]])
-      favarite_info = con.fetchall()    #ueserがfavariteしてるtweet_id
-
-      list=[]
-      for row in favarite_info: #favariteのtweetを1つずつ処理する
-          sql = ('SELECT * from users ' +
-                 'inner join tweetInfo on tweetInfo.users_id = users.id ' +
-                 'WHERE tweetInfo.id = %s ')
-
-          con.execute(sql,[row[2]])
-          tweet_info = con.fetchall()
-
-          sql = 'SELECT * from follow WHERE follow_me = %s and follow_you = %s'
-          con.execute(sql,[userinfo[0],tweet_info[0][8]])
-          follow = con.fetchall()
-          if follow is ():
-              #print('フォローしてない')
-              newrow=tweet_info[0] + (1,0)
-          else:
-              #print('フォロー中')
-              newrow=tweet_info[0] + (1,1)
-          list.append(newrow)
-      html = render_template('index.html', id=userinfo[0],name=data,rows=list)
-      db.close()
-      con.close()
+      for favorite_search in Get_list:
+          if favorite_search[12] ==1 :
+              list.append(favorite_search)
+      html = render_template('index.html', id=userinfo[0],name=data,rows=list,page=1)
     return html
 
 @application.route('/search')
@@ -129,65 +123,73 @@ def search():
     if data is None:
       html = render_template('login.html')
     else:
-      db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
-      con = db.cursor()
+      Get_list=[]
       userinfo = user(data)
-      sql = ('SELECT * from users ' +
-             'inner join tweetInfo on tweetInfo.users_id = users.id ')
-      con.execute(sql)
-      All_tweet = con.fetchall()
-      list=[]
-      for row in All_tweet: #ツイート情報を個別に配列する
-          sql= ('SELECT * from favorite WHERE favorite.delete_flg=0 and ' +
-                '(tweet_id = %s and user_id = %s)')
-          con.execute(sql,[row[7],userinfo[0]])
-          favorite = con.fetchall()
-          if favorite is ():#('お気に入りじゃない')
-              newrow=row + (0,)
-          else:#('お気に入り')
-              newrow=row + (1,)
+      Get_list=Get_tweet(data,'login_user')
+      html = render_template('search.html',name=data,rows=Get_list)
+    return html
 
-          sql = ('SELECT * from follow ' +
-                 'WHERE follow.delete_flg=0 and '+
-                 '(follow.follow_me = %s and follow.follow_you = %s)')
-          con.execute(sql,[userinfo[0],row[0]])
-          follow = con.fetchall()
-          if follow is ():#('フォローしてない')
-              newrow2=newrow + (0,)
-          else:#('フォロー中')
-              newrow2=newrow + (1,)
-          list.append(newrow2)
+@application.route('/searchget',methods=['get'])
+def search_get():
+    data = request.cookies.get('username', None)
+    if data is None:
+      html = render_template('login.html')
+    else:
+      list=[]   #ツイートを格納する配列
+      Get_list=[]
+      userinfo = user(data)
+      Get_list=Get_tweet(data,'login_user')
+      serch_word = request.args.get('search_query')
 
-      db.close()  #DBの切断
-      con.close()
+      for search in Get_list:
+          index = search[9].find(serch_word)
+          if index != -1 :
+              list.append(search)
       html = render_template('search.html',name=data,rows=list)
     return html
 
-@application.route('/follow/<userid>')
-def follow(userid=None):#選択したuserのid
+
+def follow_method(select_user):
     login_user = request.cookies.get('username', None)#ログインuserのname
     userinfo=user(login_user)
     db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
     con = db.cursor()
     sql = ('SELECT * from follow ' +
            'WHERE follow.delete_flg=0 and (follow.follow_me = %s and follow.follow_you = %s)')
-    con.execute(sql,[userinfo[0],userid])
+    con.execute(sql,[userinfo[0],select_user])
     follow = con.fetchall()
     if follow is ():  #フォローしてない時の処理 insertする
       sql = 'insert into follow(follow_me,follow_you,delete_flg) value (%s,%s,0)'
-      con.execute(sql,[userinfo[0],userid])
+      con.execute(sql,[userinfo[0],select_user])
       db.commit()
     else:               #フォローしてる時の処理  delete_flgをupdateする
       sql = 'update follow set delete_flg=1 where follow.follow_me = %s and follow.follow_you = %s'
-      con.execute(sql,[userinfo[0],userid])
+      con.execute(sql,[userinfo[0],select_user])
       db.commit()
-    html = redirect('http://' + host + '/top')#ここでtop　favariteの判断したい
     db.close()
     con.close()
+
+#お気に入り＝1,TOP=0
+@application.route('/followtop/<userid>')   #TOP
+def follow1(userid=None):#選択したuserのid
+    follow_method(userid)
+    html = redirect('http://' + host + '/top')
     return html
 
-@application.route('/favorite/<tweetid>')
-def favorite(tweetid=None):#選択したtweetのid
+@application.route('/followfavo/<userid>')  #favorite
+def follow2(userid=None):#選択したuserのid
+    follow_method(userid)
+    html = redirect('http://' + host + '/favorite')
+    return html
+
+@application.route('/followserch/<userid>')  #favorite
+def follow3(userid=None):#選択したuserのid
+    follow_method(userid)
+    html = redirect('http://' + host + '/search')
+    return html
+
+
+def favorite_method(select_user):#選択したtweetのid
     login_user = request.cookies.get('username', None)#ログインuserのname
     userinfo=user(login_user)
     db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
@@ -196,21 +198,39 @@ def favorite(tweetid=None):#選択したtweetのid
     sql = ('SELECT * from favorite ' +
            'WHERE favorite.delete_flg=0 and '+
            '(favorite.user_id = %s and favorite.tweet_id = %s)')
-    con.execute(sql,[userinfo[0],tweetid])
+    con.execute(sql,[userinfo[0],select_user])
     favorite = con.fetchall()
     if favorite is ():  #フォローしてない時の処理 insertする
       sql = 'insert into favorite(user_id,tweet_id,delete_flg) value (%s,%s,0)'
-      con.execute(sql,[userinfo[0],tweetid])
+      con.execute(sql,[userinfo[0],select_user])
       db.commit()
     else:               #フォローしてる時の処理  delete_flgをupdateする
       sql = ('update favorite set delete_flg=1 '+
              'where favorite.user_id = %s and favorite.tweet_id = %s')
-      con.execute(sql,[userinfo[0],tweetid])
+      con.execute(sql,[userinfo[0],select_user])
       db.commit()
-    html = redirect('http://' + host + '/top')#ここでtop　favariteの判断したい
     db.close()
     con.close()
+
+#お気に入り＝1,TOP=0
+@application.route('/favotop/<userid>')   #TOP
+def favo1(userid=None):#選択したuserのid
+    favorite_method(userid)
+    html = redirect('http://' + host + '/top')
     return html
+
+@application.route('/favofavo/<userid>')  #favorite
+def favo2(userid=None):#選択したuserのid
+    favorite_method(userid)
+    html = redirect('http://' + host + '/favorite')
+    return html
+
+@application.route('/favoserch/<userid>')  #favorite
+def favo3(userid=None):#選択したuserのid
+    favorite_method(userid)
+    html = redirect('http://' + host + '/search')
+    return html
+
 
 @application.route('/tubuyaita-')
 def tubuyaki1():
@@ -231,7 +251,6 @@ def tubuyaki2():
     db.close()
     con.close()
     return redirect('http://' + host + '/top')
-
 
 @application.route('/new')
 def show_new():#新規追加画面を表示する
@@ -287,25 +306,20 @@ def plofile(username=None):
     else:   #cookieにuser情報があるときの処理　表示する
       db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
       con = db.cursor()
-
-      login_user=user(data)
+      userinfo=user(data)
       sql = 'SELECT * FROM users WHERE name = %s'
       con.execute(sql,[username])
       select_user =con.fetchone()
-      if login_user[2] == select_user[2]:
-        hantei = 1
-      else:
-        hantei = 0
-      #user自身のツイートを取得
-      #sql = 'select * from tweetInfo where users_id = %s'
-      sql = 'SELECT * from users inner join tweetInfo on tweetInfo.users_id = users.id WHERE users_id = %s'
-      con.execute(sql,[login_user[0]])
-      tweet_info = con.fetchall()
 
-      tweet_list=[]
-      for row in tweet_info:
-          tweet_list.append(row)
+      if userinfo[2] == select_user[2]:
+        user_check = 1
+      else:
+        user_check = 0
+
+      Get_list=[]
+      Get_list=Get_tweet(data,select_user[0])
+      #print(Get_list)
       db.close()
       con.close()
-      html = render_template('profile.html', user=login_user,tweets=tweet_list,hantei = hantei)
+      html = render_template('profile.html', user=userinfo, tweets=Get_list, check = user_check)
     return html

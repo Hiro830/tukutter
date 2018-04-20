@@ -1,37 +1,32 @@
-@application.route('/favorite')
-def favarite():
-    data = request.cookies.get('username', None)
-    if data is None:
-      html = render_template('login.html')
-    else:
-      db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
-      con = db.cursor()
-      userinfo = user(data)
+def follow_method(user,select_user):
+    login_user = request.cookies.get('username', None)#ログインuserのname
+    userinfo=user(login_user)
+    db = MySQLdb.connect( user='root', passwd='A12qwerzxcv123', host='localhost', db='tukutter_2', charset='utf8')
+    con = db.cursor()
+    sql = ('SELECT * from follow ' +
+           'WHERE follow.delete_flg=0 and (follow.follow_me = %s and follow.follow_you = %s)')
+    con.execute(sql,[userinfo[0],userid])
+    follow = con.fetchall()
+    if follow is ():  #フォローしてない時の処理 insertする
+      sql = 'insert into follow(follow_me,follow_you,delete_flg) value (%s,%s,0)'
+      con.execute(sql,[userinfo[0],userid])
+      db.commit()
+    else:               #フォローしてる時の処理  delete_flgをupdateする
+      sql = 'update follow set delete_flg=1 where follow.follow_me = %s and follow.follow_you = %s'
+      con.execute(sql,[userinfo[0],userid])
+      db.commit()
+    html = redirect('http://' + host + '/top')#ここでtop　favariteの判断したい
+    db.close()
+    con.close()
+    return html
 
-      sql = 'select * from favorite where user_id = %s and favorite.delete_flg=0'
-      con.execute(sql,[userinfo[0]])
-      favarite_info = con.fetchall()    #ueserがfavariteしてるtweet_id
+##上の関数に以下をあてはめて戻ってくるようにする
+@application.route('/followtop/<userid>')
+def follow(userid=None):#選択したuserのid
+    page='top'
+    return html
 
-      list=[]
-      for row in favarite_info: #favariteのtweetを1つずつ処理する
-          sql = ('SELECT * from users ' +
-                 'inner join tweetInfo on tweetInfo.users_id = users.id ' +
-                 'WHERE tweetInfo.id = %s ')
-
-          con.execute(sql,[row[2]])
-          tweet_info = con.fetchall()
-
-          sql = 'SELECT * from follow WHERE follow_me = %s and follow_you = %s'
-          con.execute(sql,[userinfo[0],tweet_info[0][8]])
-          follow = con.fetchall()
-          if follow is ():
-              #print('フォローしてない')
-              newrow=tweet_info[0] + (1,0)
-          else:
-              #print('フォロー中')
-              newrow=tweet_info[0] + (1,1)
-          list.append(newrow)
-      html = render_template('index.html', id=userinfo[0],name=data,rows=list)
-      db.close()
-      con.close()
+@application.route('/followfavo/<userid>')
+def follow(userid=None):#選択したuserのid
+    page='favorite'
     return html
